@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Autores</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            margin: 30px;
+            background: #f4f4f4;
+        }
+
+        h1 {
+            color: #1e3a8a;
+        }
+
+        .btn-menu {
+            background: #16a34a;
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .btn-menu:hover {
+            background: #15803d;
+        }
+
+        form, table {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        input, button {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+
+        th {
+            background: #2563eb;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<a class="btn-menu" href="index.html">⬅ Volver al menú</a>
+
+<h1>✍️ Gestión de Autores</h1>
+
+<form id="formAutor">
+    <input type="text" id="nombre" placeholder="Nombre del autor" required>
+    <button type="submit">Guardar</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+        </tr>
+    </thead>
+    <tbody id="tablaAutores"></tbody>
+</table>
+
+<script>
+async function cargarAutores() {
+    const res = await fetch("/autores");
+    const datos = await res.json();
+
+    const tabla = document.getElementById("tablaAutores");
+    tabla.innerHTML = "";
+
+    datos.forEach(a => {
+        tabla.innerHTML += `
+            <tr>
+                <td>${a.id}</td>
+                <td>${a.nombre}</td>
+            </tr>`;
+    });
+}
+
+document.getElementById("formAutor").addEventListener("submit", async e => {
+    e.preventDefault();
+
+    await fetch("/autores", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            nombre: document.getElementById("nombre").value
+        })
+    });
+
+    document.getElementById("formAutor").reset();
+    cargarAutores();
+});
+
+cargarAutores();
+</script>
+
+</body>
+</html>

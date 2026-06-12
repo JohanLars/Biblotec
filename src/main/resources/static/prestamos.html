@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Préstamos</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            margin: 30px;
+            background: #f4f4f4;
+        }
+
+        h1 {
+            color: #1e3a8a;
+        }
+
+        .btn-menu {
+            background: #16a34a;
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .btn-menu:hover {
+            background: #15803d;
+        }
+
+        form, table {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        input, button {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+
+        th {
+            background: #2563eb;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<a class="btn-menu" href="index.html">⬅ Volver al menú</a>
+
+<h1>🔄 Gestión de Préstamos</h1>
+
+<form id="formPrestamo">
+    <input type="number" id="usuarioId" placeholder="ID Usuario" required>
+    <input type="number" id="libroId" placeholder="ID Libro" required>
+    <button type="submit">Crear Préstamo</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Usuario</th>
+            <th>Libro</th>
+            <th>Estado</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody id="tablaPrestamos"></tbody>
+</table>
+
+<script>
+async function cargarPrestamos() {
+    const res = await fetch("/prestamos");
+    const datos = await res.json();
+
+    const tabla = document.getElementById("tablaPrestamos");
+    tabla.innerHTML = "";
+
+    datos.forEach(p => {
+        tabla.innerHTML += `
+        <tr>
+            <td>${p.id}</td>
+            <td>${p.usuario ? p.usuario.nombre : ""}</td>
+            <td>${p.libro ? p.libro.titulo : ""}</td>
+            <td>${p.estado}</td>
+            <td>
+                ${
+                    p.estado === "ACTIVO"
+                    ? `<button onclick="devolverLibro(${p.id})">Devolver</button>`
+                    : "Devuelto"
+                }
+            </td>
+        </tr>`;
+    });
+}
+
+async function devolverLibro(id) {
+    await fetch("/prestamos/devolver/" + id, {
+        method: "PUT"
+    });
+
+    cargarPrestamos();
+}
+
+document.getElementById("formPrestamo").addEventListener("submit", async e => {
+    e.preventDefault();
+
+    await fetch("/prestamos", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            usuario: {
+                id: parseInt(document.getElementById("usuarioId").value)
+            },
+            libro: {
+                id: parseInt(document.getElementById("libroId").value)
+            }
+        })
+    });
+
+    document.getElementById("formPrestamo").reset();
+    cargarPrestamos();
+});
+
+cargarPrestamos();
+</script>
+
+</body>
+</html>

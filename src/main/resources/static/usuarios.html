@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de Usuarios</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f6f9;
+    margin:40px;
+}
+
+h1{
+    color:#1e3a8a;
+}
+
+.btn-menu{
+    display:inline-block;
+    background:#16a34a;
+    color:white;
+    padding:10px 15px;
+    border-radius:5px;
+    text-decoration:none;
+    margin-bottom:15px;
+}
+
+.formulario{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    max-width:500px;
+    box-shadow:0 2px 8px rgba(0,0,0,.2);
+    margin-bottom:30px;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    margin-bottom:15px;
+    border-radius:5px;
+    border:1px solid #ccc;
+    box-sizing:border-box;
+}
+
+button{
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:10px;
+    text-align:left;
+}
+
+th{
+    background:#2563eb;
+    color:white;
+}
+</style>
+</head>
+
+<body>
+
+<!-- 🔙 BOTÓN MENÚ -->
+<a class="btn-menu" href="index.html">⬅ Volver al menú</a>
+
+<h1>👤 Gestión de Usuarios</h1>
+
+<div class="formulario">
+
+<h3>Registrar Usuario</h3>
+
+<input type="text" id="nombre" placeholder="Nombre">
+<input type="text" id="documento" placeholder="Documento">
+<input type="email" id="correo" placeholder="Correo">
+
+<button onclick="guardarUsuario()">
+    Guardar Usuario
+</button>
+
+</div>
+
+<h2>Lista de Usuarios</h2>
+
+<table>
+
+<thead>
+<tr>
+    <th>ID</th>
+    <th>Nombre</th>
+    <th>Documento</th>
+    <th>Correo</th>
+</tr>
+</thead>
+
+<tbody id="tablaUsuarios"></tbody>
+
+</table>
+
+<script>
+
+async function cargarUsuarios(){
+
+    try{
+
+        const respuesta = await fetch("/usuarios");
+
+        if(!respuesta.ok){
+            console.log("Backend no disponible");
+            return;
+        }
+
+        const usuarios = await respuesta.json();
+
+        let filas = "";
+
+        usuarios.forEach(usuario => {
+
+            filas += `
+                <tr>
+                    <td>${usuario.id}</td>
+                    <td>${usuario.nombre}</td>
+                    <td>${usuario.documento}</td>
+                    <td>${usuario.correo}</td>
+                </tr>
+            `;
+
+        });
+
+        document.getElementById("tablaUsuarios").innerHTML = filas;
+
+    }catch(error){
+
+        console.error(error);
+
+    }
+
+}
+
+async function guardarUsuario(){
+
+    const usuario = {
+
+        nombre: document.getElementById("nombre").value.trim(),
+        documento: document.getElementById("documento").value.trim(),
+        correo: document.getElementById("correo").value.trim(),
+        activo: true
+
+    };
+
+    if(usuario.nombre === "" ||
+       usuario.documento === "" ||
+       usuario.correo === ""){
+
+        alert("Todos los campos son obligatorios.");
+        return;
+    }
+
+    try{
+
+        const respuesta = await fetch("/usuarios",{
+
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify(usuario)
+
+        });
+
+        if(!respuesta.ok){
+            alert("Error al guardar usuario");
+            return;
+        }
+
+        document.getElementById("nombre").value = "";
+        document.getElementById("documento").value = "";
+        document.getElementById("correo").value = "";
+
+        cargarUsuarios();
+
+    }catch(error){
+        console.error(error);
+        alert("Error de conexión con el servidor");
+    }
+}
+
+cargarUsuarios();
+
+</script>
+
+</body>
+</html>
